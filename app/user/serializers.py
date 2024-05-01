@@ -13,6 +13,7 @@ class UserSerializer(serializers.ModelSerializer):
 
     def create(self, validated_data):
         return get_user_model().objects.create_user(**validated_data)
+<<<<<<< HEAD
     
 class TokenSerializer(serializers.Serializer):
     email = serializers.EmailField()
@@ -34,3 +35,5 @@ class TokenSerializer(serializers.Serializer):
         
         attrs['user'] = user
         return attrs    
+=======
+>>>>>>> 5ef188385652ef6a58990bdd5deaa229bdec6a82
