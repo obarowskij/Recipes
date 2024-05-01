@@ -52,7 +52,6 @@ class PublicUserAPITest(TestCase):
         self.assertEqual(res.status_code, status.HTTP_400_BAD_REQUEST)
         with self.assertRaises(get_user_model().DoesNotExist) as context:
             get_user_model().objects.get(email=payload['email'])
-<<<<<<< HEAD
         self.assertEqual(str(context.exception), "User matching query does not exist.")
     
     def test_token_created_succesfully(self):
@@ -99,7 +98,3 @@ class PublicUserAPITest(TestCase):
         res = self.client.post(TOKEN_URL, for_token)
         self.assertNotIn('token', res.data)
         self.assertEqual(res.status_code, status.HTTP_400_BAD_REQUEST)        
-=======
-        self.assertEqual(str(context.exception),
-                         "User matching query does not exist.")
->>>>>>> 5ef188385652ef6a58990bdd5deaa229bdec6a82
