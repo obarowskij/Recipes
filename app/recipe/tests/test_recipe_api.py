@@ -9,12 +9,19 @@ from rest_framework.test import APIClient
 
 from core.models import Recipe
 
-from recipe.serializers import RecipeSerializer
+from recipe.serializers import RecipeSerializer, RecipeDetailSerializer
 
 
 RECIPES_URL = reverse("recipe:recipe-list")
 
+def get_recipe(recipe_id):
+    return reverse('recipe:recipe-detail', args=[recipe_id])
 
+def create_user(email, password):
+    return get_user_model().objects.create(
+        email=email,
+        password=password
+    )
 def create_recipe(user, **params):
     defaults = {
         "title": "sample recipe",
@@ -72,3 +79,93 @@ class PrivateRecipeTest(TestCase):
 
         self.assertEqual(res.status_code, status.HTTP_200_OK)
         self.assertEqual(res.data, serializer.data)
+
+    def test_get_recipe_detail(self):
+        recipe = create_recipe(user=self.user)
+
+        url = get_recipe(recipe.id)
+        res = self.client.get(url)
+        serializer = RecipeDetailSerializer(recipe)
+        self.assertEqual(res.data, serializer.data)
+
+    def test_create_recipe(self):
+        payload = {
+            'title': 'test',
+            'time_minutes': 5,
+            'price': Decimal('5.00'),
+        }
+        res = self.client.post(RECIPES_URL, payload)
+        self.assertEqual(res.status_code, status.HTTP_201_CREATED)
+        recipe = Recipe.objects.get(id=res.data['id'])
+        for k, v in payload.items():
+            self.assertEqual(getattr(recipe, k), v)
+        self.assertEqual(recipe.user, self.user)
+    
+    def test_partial_update(self):
+        link = 'http://example.com/example.pdf'
+        payload = {
+            'user': self.user,
+            'title': 'test',
+            'link': link,
+        }
+        recipe = create_recipe(**payload)
+        changes = {'title': 'changed title'}
+        url = get_recipe(recipe.id)
+        res = self.client.patch(url, changes)
+        recipe.refresh_from_db()
+        self.assertEqual(res.status_code, status.HTTP_200_OK)
+        self.assertEqual(recipe.user, self.user)
+        self.assertEqual(recipe.title, changes['title'])
+        self.assertEqual(recipe.link, link)
+
+    def test_full_update(self):
+        defaults = {
+            'user': self.user,
+            "title": "sample recipe",
+            "time_minutes": 420,
+            "price": Decimal("5.55"),
+            "description": "Sample desc",
+            "link": "http://example.com/recipe.pdf",
+        }
+        recipe = create_recipe(**defaults)
+        payload = {
+            "title": "sample recipe1",
+            "time_minutes": 421,
+            "price": Decimal("5.56"),
+            "description": "Sample desc1",
+            "link": "http://example.com/recipe1.pdf",
+        }
+        url = get_recipe(recipe.id)
+        res = self.client.put(url, payload)
+        recipe.refresh_from_db()
+        self.assertEqual(res.status_code, status.HTTP_200_OK)
+        for k, v in payload.items():
+            self.assertEqual(getattr(recipe, k), v)
+        self.assertEqual(recipe.user, self.user)
+
+    def test_user_not_changeable(self):
+        recipe = create_recipe(user=self.user)
+        new_user = create_user("test1@example.com", 'test123')
+        payload = {
+            'user': new_user
+        }
+        url = get_recipe(recipe.id)
+        self.client.patch(url, payload)
+        recipe.refresh_from_db()
+        self.assertEqual(recipe.user, self.user)
+
+    def test_delete_recipe(self):
+        recipe = create_recipe(user=self.user)
+        url = get_recipe(recipe.id)
+        res = self.client.delete(url)
+        self.assertEqual(res.status_code, status.HTTP_204_NO_CONTENT)
+        self.assertNotIn(recipe, Recipe.objects.all())
+
+    def test_delete_other_user_recipe(self):
+        new_user = create_user('test1@example.com', 'test123')
+        recipe = create_recipe(user=new_user)
+        url = get_recipe(recipe.id)
+        res = self.client.delete(url)
+        self.assertEqual(res.status_code, status.HTTP_404_NOT_FOUND)
+        self.assertTrue(Recipe.objects.get(id=recipe.id))
+
