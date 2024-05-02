@@ -127,3 +127,9 @@ dmypy.json
 
 # Pyre type checker
 .pyre/
+
+# Black
+pyproject.toml
+
+# Pre-commit
+pre-commit-config.yaml
