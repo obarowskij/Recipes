@@ -14,14 +14,15 @@ from recipe.serializers import RecipeSerializer, RecipeDetailSerializer
 
 RECIPES_URL = reverse("recipe:recipe-list")
 
+
 def get_recipe(recipe_id):
-    return reverse('recipe:recipe-detail', args=[recipe_id])
+    return reverse("recipe:recipe-detail", args=[recipe_id])
+
 
 def create_user(email, password):
-    return get_user_model().objects.create(
-        email=email,
-        password=password
-    )
+    return get_user_model().objects.create(email=email, password=password)
+
+
 def create_recipe(user, **params):
     defaults = {
         "title": "sample recipe",
@@ -90,37 +91,37 @@ class PrivateRecipeTest(TestCase):
 
     def test_create_recipe(self):
         payload = {
-            'title': 'test',
-            'time_minutes': 5,
-            'price': Decimal('5.00'),
+            "title": "test",
+            "time_minutes": 5,
+            "price": Decimal("5.00"),
         }
         res = self.client.post(RECIPES_URL, payload)
         self.assertEqual(res.status_code, status.HTTP_201_CREATED)
-        recipe = Recipe.objects.get(id=res.data['id'])
+        recipe = Recipe.objects.get(id=res.data["id"])
         for k, v in payload.items():
             self.assertEqual(getattr(recipe, k), v)
         self.assertEqual(recipe.user, self.user)
-    
+
     def test_partial_update(self):
-        link = 'http://example.com/example.pdf'
+        link = "http://example.com/example.pdf"
         payload = {
-            'user': self.user,
-            'title': 'test',
-            'link': link,
+            "user": self.user,
+            "title": "test",
+            "link": link,
         }
         recipe = create_recipe(**payload)
-        changes = {'title': 'changed title'}
+        changes = {"title": "changed title"}
         url = get_recipe(recipe.id)
         res = self.client.patch(url, changes)
         recipe.refresh_from_db()
         self.assertEqual(res.status_code, status.HTTP_200_OK)
         self.assertEqual(recipe.user, self.user)
-        self.assertEqual(recipe.title, changes['title'])
+        self.assertEqual(recipe.title, changes["title"])
         self.assertEqual(recipe.link, link)
 
     def test_full_update(self):
         defaults = {
-            'user': self.user,
+            "user": self.user,
             "title": "sample recipe",
             "time_minutes": 420,
             "price": Decimal("5.55"),
@@ -145,10 +146,8 @@ class PrivateRecipeTest(TestCase):
 
     def test_user_not_changeable(self):
         recipe = create_recipe(user=self.user)
-        new_user = create_user("test1@example.com", 'test123')
-        payload = {
-            'user': new_user
-        }
+        new_user = create_user("test1@example.com", "test123")
+        payload = {"user": new_user}
         url = get_recipe(recipe.id)
         self.client.patch(url, payload)
         recipe.refresh_from_db()
@@ -162,10 +161,9 @@ class PrivateRecipeTest(TestCase):
         self.assertNotIn(recipe, Recipe.objects.all())
 
     def test_delete_other_user_recipe(self):
-        new_user = create_user('test1@example.com', 'test123')
+        new_user = create_user("test1@example.com", "test123")
         recipe = create_recipe(user=new_user)
         url = get_recipe(recipe.id)
         res = self.client.delete(url)
         self.assertEqual(res.status_code, status.HTTP_404_NOT_FOUND)
         self.assertTrue(Recipe.objects.get(id=recipe.id))
-
