@@ -10,16 +10,19 @@ from core.models import Tag
 
 from recipe.serializers import TagSerializer
 
-TAGS_URL = reverse('recipe:tag-list')
+TAGS_URL = reverse("recipe:tag-list")
 
-def create_user(email='user3@example.com', password='testpass123'):
+
+def create_user(email="user3@example.com", password="testpass123"):
     return get_user_model().objects.create_user(
         email=email,
         password=password,
     )
 
+
 def detail_url(id):
-    return reverse('recipe:tag-detail', args=[id])
+    return reverse("recipe:tag-detail", args=[id])
+
 
 class PublicTagsAPITests(TestCase):
 
@@ -31,6 +34,7 @@ class PublicTagsAPITests(TestCase):
 
         self.assertEqual(res.status_code, status.HTTP_401_UNAUTHORIZED)
 
+
 class PrivateTagsAPITests(TestCase):
 
     def setUp(self):
@@ -40,37 +44,35 @@ class PrivateTagsAPITests(TestCase):
         self.client.force_authenticate(user=self.user)
 
     def test_retrieve_tags(self):
-        Tag.objects.create(user=self.user, name='test')
-        Tag.objects.create(user=self.user, name='test1')
+        Tag.objects.create(user=self.user, name="test")
+        Tag.objects.create(user=self.user, name="test1")
         res = self.client.get(TAGS_URL)
-        tags = Tag.objects.all().order_by('-name')
+        tags = Tag.objects.all().order_by("-name")
         serializer = TagSerializer(tags, many=True)
         self.assertEqual(res.status_code, status.HTTP_200_OK)
         self.assertEqual(res.data, serializer.data)
 
     def test_filter_tags(self):
         new_user = create_user(email="test1@example.com")
-        Tag.objects.create(user=new_user, name='test1')
-        tag = Tag.objects.create(user=self.user, name='test2')
+        Tag.objects.create(user=new_user, name="test1")
+        tag = Tag.objects.create(user=self.user, name="test2")
         res = self.client.get(TAGS_URL)
 
         self.assertEqual(res.status_code, status.HTTP_200_OK)
         self.assertEqual(len(res.data), 1)
-        self.assertEqual(res.data[0]['name'], tag.name)
-        self.assertEqual(res.data[0]['id'], tag.id)
+        self.assertEqual(res.data[0]["name"], tag.name)
+        self.assertEqual(res.data[0]["id"], tag.id)
 
     def test_update_tags(self):
-        tag = Tag.objects.create(user=self.user, name='test')
-        payload = {
-            'name': 'patched_name'
-        }
+        tag = Tag.objects.create(user=self.user, name="test")
+        payload = {"name": "patched_name"}
         res = self.client.patch(detail_url(tag.id), payload)
         tag.refresh_from_db()
         self.assertEqual(res.status_code, status.HTTP_200_OK)
-        self.assertEqual(payload['name'], tag.name)
+        self.assertEqual(payload["name"], tag.name)
 
     def test_delete_tags(self):
-        tag = Tag.objects.create(user=self.user, name='test')
+        tag = Tag.objects.create(user=self.user, name="test")
         serializer = TagSerializer(tag)
         res = self.client.get(TAGS_URL)
         self.assertEqual(res.status_code, status.HTTP_200_OK)
