@@ -6,13 +6,13 @@ from django.db import migrations, models
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('core', '0006_ingredient'),
+        ("core", "0006_ingredient"),
     ]
 
     operations = [
         migrations.AddField(
-            model_name='recipe',
-            name='ingredients',
-            field=models.ManyToManyField(to='core.Ingredient'),
+            model_name="recipe",
+            name="ingredients",
+            field=models.ManyToManyField(to="core.Ingredient"),
         ),
     ]

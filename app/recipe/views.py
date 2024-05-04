@@ -39,7 +39,8 @@ class TagsViewSet(
 
     def get_queryset(self):
         return Tag.objects.filter(user=self.request.user).order_by("-name")
-    
+
+
 class IngredientsViewSet(mixins.ListModelMixin, viewsets.GenericViewSet):
     serializer_class = serializers.IngredientSerializer
     queryset = Tag.objects.all()
@@ -47,4 +48,6 @@ class IngredientsViewSet(mixins.ListModelMixin, viewsets.GenericViewSet):
     authentication_classes = [TokenAuthentication]
 
     def get_queryset(self):
-        return Ingredient.objects.filter(user=self.request.user).order_by('-name')
+        return Ingredient.objects.filter(user=self.request.user).order_by(
+            "-name"
+        )
