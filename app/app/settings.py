@@ -139,8 +139,3 @@ AUTH_USER_MODEL = "core.User"
 REST_FRAMEWORK = {
     "DEFAULT_SCHEMA_CLASS": "drf_spectacular.openapi.AutoSchema",
 }
-ALLOWED_HOSTS = [
-    "127.0.0.1",
-    "192.168.93.1",
-    "0.0.0.0",
-]
