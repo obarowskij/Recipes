@@ -212,3 +212,35 @@ class PrivateRecipeTest(TestCase):
                     user=self.user,
                 ).exists()
             )
+
+    def test_creating_tags_on_patch(self):
+        recipe = create_recipe(user=self.user)
+        payload = {'tags': [{'name': 'test'}]}
+        url = get_recipe(recipe.id)
+        res = self.client.patch(url, payload, format='json')
+        new_tag= Tag.objects.get(user=self.user, name='test')
+        self.assertEqual(res.status_code, status.HTTP_200_OK)
+        self.assertIn(new_tag, recipe.tags.all())
+        
+    def test_update_recipe_tags(self):
+        tag1 = Tag.objects.create(user=self.user, name='test1')
+        recipe = create_recipe(user=self.user)
+        recipe.tags.add(tag1)
+
+        tag2 = Tag.objects.create(user=self.user, name='test2')
+        payload = {'tags': [{'name': 'test2'}]}
+        url = get_recipe(recipe.id)
+        res = self.client.patch(url, payload, format='json')
+        self.assertEqual(res.status_code, status.HTTP_200_OK)
+        self.assertIn(tag2, recipe.tags.all())
+        self.assertNotIn(tag1, recipe.tags.all())
+
+    def test_clearing_tags(self):
+        tag = Tag.objects.create(user=self.user, name='test')
+        recipe = create_recipe(user=self.user)
+        recipe.tags.add(tag)
+        payload = {'tags': []}
+        url = get_recipe(recipe.id)
+        res = self.client.patch(url, payload, format='json')
+        self.assertEqual(res.status_code, status.HTTP_200_OK)
+        self.assertEqual(recipe.tags.count(), 0)
