@@ -77,10 +77,10 @@ class ModelTests(TestCase):
         )
         self.assertEqual(str(ingredient), ingredient.name)
 
-    @patch('core.models.uuid.uuid4')
+    @patch("core.models.uuid.uuid4")
     def test_creating_url_for_image(self, mock_uuid):
-        uuid = 'test_uuid'
+        uuid = "test_uuid"
         mock_uuid.return_value = uuid
-        file_path = models.get_image_file_path(None, 'example.jpg')
+        file_path = models.get_image_file_path(None, "example.jpg")
 
-        self.assertEqual(file_path, f'uploads/recipes/{uuid}.jpg')
+        self.assertEqual(file_path, f"uploads/recipes/{uuid}.jpg")

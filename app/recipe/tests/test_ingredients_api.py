@@ -92,36 +92,36 @@ class PrivateIngredientsTests(TestCase):
 
         rec = Recipe.objects.create(
             user=self.user,
-            title='test1',
+            title="test1",
             time_minutes=10,
-            price=Decimal('5.00')
+            price=Decimal("5.00"),
         )
         rec.ingredients.add(ing1)
         s1 = IngredientSerializer(ing1)
         s2 = IngredientSerializer(ing2)
-        res = self.client.get(INGREDIENTS_URL, {'assigned_only': 1})
+        res = self.client.get(INGREDIENTS_URL, {"assigned_only": 1})
 
         self.assertIn(s1.data, res.data)
         self.assertNotIn(s2.data, res.data)
 
     def test_distinct_ingredients(self):
         ing1 = Ingredient.objects.create(user=self.user, name="test1")
-        Ingredient.objects.create(user=self.user, name='test2')
+        Ingredient.objects.create(user=self.user, name="test2")
         rec1 = Recipe.objects.create(
             user=self.user,
-            title='test1',
+            title="test1",
             time_minutes=10,
-            price=Decimal('5.00')
+            price=Decimal("5.00"),
         )
         rec2 = Recipe.objects.create(
             user=self.user,
-            title='test2',
+            title="test2",
             time_minutes=10,
-            price=Decimal('5.00')
+            price=Decimal("5.00"),
         )
         rec1.ingredients.add(ing1)
         rec2.ingredients.add(ing1)
 
-        res = self.client.get(INGREDIENTS_URL, {'assigned_only': 1})
+        res = self.client.get(INGREDIENTS_URL, {"assigned_only": 1})
 
         self.assertEqual(len(res.data), 1)
