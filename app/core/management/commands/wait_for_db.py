@@ -9,7 +9,7 @@ from time import sleep
 
 
 class Command(BaseCommand):
-    """Django command to wait for database."""
+
 
     def handle(self, *args, **options):
         """Handle the command."""
